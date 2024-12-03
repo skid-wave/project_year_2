@@ -6,7 +6,7 @@ This project summarizes YouTube video transcripts and converts the summary to sp
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/youtube-transcript-summarizer.git
+    git clone https://github.com/skid-wave/project_year_2.git
     cd youtube-transcript-summarizer
     ```
 
