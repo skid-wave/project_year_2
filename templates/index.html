@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Transcript Summarizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 style="font-family: 'Open Sans', sans-serif;">YouTube Transcript Summarizer</h1>
+        <div class="input-group">
+            <label for="youtube-link">YouTube Link:</label>
+            <input type="text" id="youtube-link" placeholder="Enter YouTube link">
+        </div>
+        <div class="input-group">
+            <label for="language">Select Language:</label>
+            <select id="language">
+                <option value="en">English</option>
+                 <option value="mr">Marathi</option>
+                <option value="hi">Hindi</option>
+                <option value="gu">Gujarati</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="bn">Bengali</option>
+                <option value="ta">Tamil</option>
+            </select>
+        </div>
+        <button class="button" id="summarize-button">Summarize</button>
+        <div class="loading-bar" id="loading-bar"></div>
+        <div class="result" id="result">
+            <button class="copy-button" id="copy-button">Copy</button>
+            <div id="summary-text-container">
+                <div class="scrollable-div">
+                    <p id="summary-text"></p>
+                </div>
+            </div>
+            <div class="centered-buttons">
+                <button class="button" id="download-summary-button" style="display: none;">Download Summary as Text</button>
+            </div>
+            <div class="audio-controls"> 
+                <a href="#" id="download-link" style="display: none;">Download Audio</a>
+                <button class="button" id="download-audio-button" style="display: none;">Download Audio</button>
+                <select id="audio-format" style="display: none;">
+                    <option value="mp3">MP3</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('summarize-button').addEventListener('click', async function() {
+            const youtubeLink = document.getElementById('youtube-link').value;
+            const language = document.getElementById('language').value;
+            const loadingBar = document.getElementById('loading-bar');
+            loadingBar.style.display = 'block';
+
+            try {
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ youtube_link: youtubeLink, language: language })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                loadingBar.style.display = 'none';
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+                document.getElementById('summary-text').innerText = data.summary;
+                document.getElementById('download-link').href = data.audioUrl;
+                document.getElementById('summarize-button').style.display = 'none';
+                document.getElementById('download-summary-button').style.display = 'block';
+                document.getElementById('audio-format').style.display = 'inline'; 
+                document.getElementById('download-audio-button').style.display = 'block'; 
+            } catch (error) {
+                loadingBar.style.display = 'none';
+                console.error('Error:', error);
+                alert('An error occurred while summarizing. Please try again.');
+            }
+        });
+
+        document.getElementById('copy-button').addEventListener('click', function() {
+            const summaryText = document.getElementById('summary-text').innerText;
+            navigator.clipboard.writeText(summaryText).then(() => {
+                alert('Summary copied to clipboard!');
+            });
+        });
+
+        document.getElementById('download-summary-button').addEventListener('click', function() {
+            const summaryText = document.getElementById('summary-text').innerText;
+            const blob = new Blob([summaryText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'summary.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        document.getElementById('download-audio-button').addEventListener('click', function() {
+            const selectedFormat = document.getElementById('audio-format').value;
+            const audioBaseUrl = '/static/audio';
+
+            const audioUrl = `${audioBaseUrl}.${selectedFormat}`;
+            const a = document.createElement('a');
+            a.href = audioUrl;
+            a.download = `audio.${selectedFormat}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+Flask
+gTTS
+pytube
+youtube-transcript-api
+moviepy
+SpeechRecognition
+transformers
+langdetect
+requests
+googletrans
